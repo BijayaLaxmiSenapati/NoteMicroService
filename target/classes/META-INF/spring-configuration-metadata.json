@@ -1,0 +1,97 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller",
+      "type": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.add-label-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.add-pin-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.add-reminder-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.add-to-archive-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.create-label-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.delete-label-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.edit-label-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.empty-trash-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.permanently-delete-note-msg-d-l-t",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.remove-from-archive",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.remove-label-from-note-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.remove-pin-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.remove-reminder-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.restore-note-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.successful-status",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.trash-note-msg",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig",
+      "name": "message.controller.update-note-msg",
+      "type": "java.lang.String"
+    }
+  ]
+}
