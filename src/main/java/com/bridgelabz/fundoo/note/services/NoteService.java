@@ -109,9 +109,9 @@ public interface NoteService {
 
 	List<Label> getAllLabel(String token) throws LabelException;
 
-	List<Note> getAllTrashedNote(String token);
+	List<NoteViewDTO> getAllTrashedNote(String token);
 
-	List<Note> getAllArchivedNote(String token);
+	List<NoteViewDTO> getAllArchivedNote(String token);
 
 	void emptyTrash(String token);
 
@@ -119,5 +119,13 @@ public interface NoteService {
 			throws NoteNotFoundException, LabelException;
 
 	void addColor(String token, String noteId, ColorDTO colorDTO) throws NoteNotFoundException;
+
+	List<NoteViewDTO> sortNoteByTitle(String header, Boolean ascendingOrDescending);
+
+	List<NoteViewDTO> sortNoteByDate(String header, Boolean ascendingOrDescending);
+
+	List<Label> sortLabelByName(String header, Boolean ascendingOrDescending);
+
+	List<Label> sortLabelByDate(String header, Boolean ascendingOrDescending);
 
 }

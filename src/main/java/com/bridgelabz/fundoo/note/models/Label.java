@@ -13,6 +13,8 @@ public class Label {
 	private String labelId;
 
 	private String labelName;
+	
+	private String createdAt;
 
 	public Label() {
 		super();
@@ -40,6 +42,14 @@ public class Label {
 
 	public void setLabelName(String labelName) {
 		this.labelName = labelName;
+	}
+
+	public String getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(String createdAt) {
+		this.createdAt = createdAt;
 	}
 
 }

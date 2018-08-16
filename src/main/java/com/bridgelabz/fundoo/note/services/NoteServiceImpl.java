@@ -2,9 +2,12 @@ package com.bridgelabz.fundoo.note.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -136,9 +139,13 @@ public class NoteServiceImpl implements NoteService {
 
 		List<NoteViewDTO> noteViewDTO = new ArrayList<>();
 		if (noteList.isPresent()) {
-			for (Note note : noteList.get()) {
-				noteViewDTO.add(noteFactory.getNoteViewDTOFromNote(note));
-			}
+			/*
+			 * for (Note note : noteList) {
+			 * noteViewDTO.add(noteFactory.getNoteViewDTOFromNote(note)); }
+			 */
+			// noteViewDTO=noteList.stream().map(x ->
+			// noteFactory.getNoteViewDTOFromNote(x)).collect(Collectors.toList());
+			noteViewDTO = noteList.get().stream().map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
 		}
 
 		return noteViewDTO;
@@ -380,19 +387,23 @@ public class NoteServiceImpl implements NoteService {
 	}
 
 	@Override
-	public List<Note> getAllTrashedNote(String userId) {
+	public List<NoteViewDTO> getAllTrashedNote(String userId) {
 
 		Optional<List<Note>> noteList = noteRepositoryES.findAllByUserIdAndTrashed(userId, true);
 
-		return noteList.get();
+		List<NoteViewDTO> noteViewDTO = noteList.get().stream().map(noteFactory::getNoteViewDTOFromNote)
+				.collect(Collectors.toList());
+		return noteViewDTO;
 	}
 
 	@Override
-	public List<Note> getAllArchivedNote(String userId) {
+	public List<NoteViewDTO> getAllArchivedNote(String userId) {
 
 		Optional<List<Note>> noteList = noteRepositoryES.findAllByUserIdAndArchived(userId, true);
 
-		return noteList.get();
+		List<NoteViewDTO> noteViewDTO = noteList.get().stream().map(noteFactory::getNoteViewDTOFromNote)
+				.collect(Collectors.toList());
+		return noteViewDTO;
 	}
 
 	@Override
@@ -472,4 +483,57 @@ public class NoteServiceImpl implements NoteService {
 		}
 		return listOfURLMetaData;
 	}
+
+	@Override
+	public List<NoteViewDTO> sortNoteByTitle(String userId, Boolean ascendingOrDescending) {
+
+		List<Note> noteList = noteRepositoryES.findAllByUserId(userId).get();
+		if (ascendingOrDescending) {
+			return noteList.stream().sorted(Comparator.comparing(Note::getTitle)).map(noteFactory::getNoteViewDTOFromNote)
+			.collect(Collectors.toList());
+		} else {
+			return noteList.stream().sorted(Comparator.comparing(Note::getTitle).reversed()).map(noteFactory::getNoteViewDTOFromNote)
+			.collect(Collectors.toList());
+		}
+		
+	}
+
+	@Override
+	public List<NoteViewDTO> sortNoteByDate(String userId, Boolean ascendingOrDescending) {
+
+		List<Note> noteList = noteRepositoryES.findAllByUserId(userId).get();
+
+		if (ascendingOrDescending) {
+			return noteList.stream().sorted(Comparator.comparing(Note::getCreatedAt))
+					.map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
+		} else {
+			return noteList.stream().sorted(Comparator.comparing(Note::getCreatedAt).reversed())
+					.map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
+		}
+	}
+
+	@Override
+	public List<Label> sortLabelByName(String userId, Boolean ascendingOrDescending) {
+
+		List<Label> labelList = labelRepositoryES.findAllByUserId(userId).get();
+
+		if (ascendingOrDescending) {
+			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName)).collect(Collectors.toList());
+		} else {
+			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName).reversed()).collect(Collectors.toList());
+		}
+	}
+
+	@Override
+	public List<Label> sortLabelByDate(String userId, Boolean ascendingOrDescending) {
+
+		List<Label> labelList = labelRepositoryES.findAllByUserId(userId).get();
+
+		if (ascendingOrDescending) {
+			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName)).collect(Collectors.toList());
+		} else {
+			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName).reversed()).collect(Collectors.toList());
+		}
+	}
+
 }

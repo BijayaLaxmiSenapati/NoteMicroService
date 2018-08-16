@@ -318,20 +318,20 @@ public class NoteController {
 
 	}
 
-	@GetMapping(value = "/view-all-trashed-note")
-	public ResponseEntity<List<Note>> viewAllTrashedNote(HttpServletRequest request)
+	@GetMapping(value = "/get-all-trashed-note")
+	public ResponseEntity<List<NoteViewDTO>> getAllTrashedNote(HttpServletRequest request)
 			throws LabelException {
 
-		List<Note> trashedNoteList = noteService.getAllTrashedNote(request.getHeader("userId"));
+		List<NoteViewDTO> trashedNoteList = noteService.getAllTrashedNote(request.getHeader("userId"));
 
 		return new ResponseEntity<>(trashedNoteList, HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/get-all-archived-note")
-	public ResponseEntity<List<Note>> getAllArchivedNote(HttpServletRequest request)
+	public ResponseEntity<List<NoteViewDTO>> getAllArchivedNote(HttpServletRequest request)
 			throws LabelException {
 
-		List<Note> pinnedNoteList = noteService.getAllArchivedNote(request.getHeader("userId"));
+		List<NoteViewDTO> pinnedNoteList = noteService.getAllArchivedNote(request.getHeader("userId"));
 
 		return new ResponseEntity<>(pinnedNoteList, HttpStatus.OK);
 	}
@@ -358,6 +358,34 @@ public class NoteController {
 		responseDTO.setMessage(messagePropertyConfig.getRemoveLabelFromNoteMsg());
 		responseDTO.setStatus(messagePropertyConfig.getSuccessfulStatus());
 		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+	}
+	
+	@GetMapping(value="/sort-note-by-title")
+	public List<NoteViewDTO> sortNoteByTitle(HttpServletRequest request, @RequestParam Boolean ascendingOrDescending) {
+		
+		return noteService.sortNoteByTitle(request.getHeader("userId"),ascendingOrDescending);
+		
+	}
+	
+	@GetMapping(value="/sort-note-by-date")
+	public List<NoteViewDTO> sortNoteByDate(HttpServletRequest request, @RequestParam Boolean ascendingOrDescending) {
+		
+		return noteService.sortNoteByDate(request.getHeader("userId"),ascendingOrDescending);
+		
+	}
+	
+	
+	@GetMapping(value="/sort-label-by-name")
+	public List<Label> sortLabelByName(HttpServletRequest request, @RequestParam Boolean ascendingOrDescending) {
+		
+		return noteService.sortLabelByName(request.getHeader("userId"),ascendingOrDescending);
+		
+	}
+	
+	@GetMapping(value="/sort-label-by-date")
+	public List<Label> sortLabelByDate(HttpServletRequest request, @RequestParam Boolean ascendingOrDescending) {
+		
+		return noteService.sortLabelByDate(request.getHeader("userId"),ascendingOrDescending);
 	}
 
 }
