@@ -30,7 +30,6 @@ import com.bridgelabz.fundoo.note.exceptions.NoteTrashException;
 import com.bridgelabz.fundoo.note.models.ColorDTO;
 import com.bridgelabz.fundoo.note.models.Label;
 import com.bridgelabz.fundoo.note.models.LabelAddDTO;
-import com.bridgelabz.fundoo.note.models.LabelCreateDTO;
 import com.bridgelabz.fundoo.note.models.Note;
 import com.bridgelabz.fundoo.note.models.NoteCreateDTO;
 import com.bridgelabz.fundoo.note.models.NoteUpdateDTO;
@@ -49,16 +48,6 @@ public class NoteController {
 	@Autowired
 	private NoteService noteService;
 
-	/**
-	 * @param token
-	 * @param noteDTO
-	 * @param response
-	 * @return
-	 * @throws NoteException
-	 * @throws EmptyNoteException
-	 * @throws InvalidDateException
-	 * @throws GetURLInfoException
-	 */
 	@PostMapping(value = "/create-note")
 	public ResponseEntity<NoteViewDTO> createNote(HttpServletRequest request,
 			@RequestBody NoteCreateDTO noteCreateDTO, HttpServletResponse response)
@@ -68,16 +57,6 @@ public class NoteController {
 		return new ResponseEntity<>(noteViewDTO, HttpStatus.CREATED);
 	}
 
-	/**
-	 * @param token
-	 * @param noteCreateDTO
-	 * @return
-	 * @throws NoteException
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 * @throws GetURLInfoException 
-	 */
 	@PutMapping(value = "/update-note")
 	public ResponseEntity<ResponseDTO> updateNote(HttpServletRequest request,
 			@RequestBody NoteUpdateDTO noteUpdateDTO) throws NoteNotFoundException, NoteAuthorisationException, GetURLInfoException {
@@ -89,30 +68,31 @@ public class NoteController {
 		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
 	}
 
-	/**
-	 * @param token
-	 * @return
-	 */
 	@GetMapping(value = "/get-all-notes")
-	public ResponseEntity<List<NoteViewDTO>> getAllNotes(HttpServletRequest request) {
+	public ResponseEntity<List<NoteViewDTO>> getAllNotes(HttpServletRequest request,@RequestParam(required=false) String sortBy,@RequestParam(required=false) String sortOrder) {
 
-		List<NoteViewDTO> list = noteService.getAllNotes(request.getHeader("userId"));
+		List<NoteViewDTO> list = noteService.getAllNotes(request.getHeader("userId"),sortBy,sortOrder);
 
 		return new ResponseEntity<>(list, HttpStatus.OK);
 	}
 
-	/**
-	 * @param token
-	 * @param id
-	 * @return
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 */
+
+	@PostMapping(value = "/add-label/{noteId}")
+	public ResponseEntity<ResponseDTO> addLabel(HttpServletRequest request,
+			@PathVariable(value = "noteId") String noteId, @RequestBody LabelAddDTO labelAddDTO)
+			throws NoteNotFoundException, LabelException, LabelNotFoundException {
+
+		noteService.addLabel(request.getHeader("userId"), noteId, labelAddDTO);
+
+		ResponseDTO responseDTO = new ResponseDTO();
+		responseDTO.setMessage(messagePropertyConfig.getAddLabelMsg());
+		responseDTO.setStatus(messagePropertyConfig.getSuccessfulStatus());
+		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+	}
+
 	@PutMapping(value = "/trash/{id}/{trashOrRestore}")
 	public ResponseEntity<ResponseDTO> trashNote(HttpServletRequest request,
-			@PathVariable(value = "id") String id, @PathVariable(value = "trashOrRestore") boolean trashOrRestore)
+			@PathVariable String id, @PathVariable boolean trashOrRestore)
 			throws NoteNotFoundException, NoteAuthorisationException {
 		noteService.trashNote(request.getHeader("userId"), id, trashOrRestore);
 
@@ -129,19 +109,9 @@ public class NoteController {
 		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
 	}
 
-	/**
-	 * @param token
-	 * @param id
-	 * @return
-	 * @throws NoteException
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 * @throws NoteTrashException
-	 */
 	@DeleteMapping(value = "/permanently-delete-note/{id}")
 	public ResponseEntity<ResponseDTO> permanentlyDeleteNote(HttpServletRequest request,
-			@PathVariable(value = "id") String id)
+			@PathVariable String id)
 			throws NoteNotFoundException, NoteAuthorisationException, NoteTrashException {
 		noteService.permanentlyDeleteNote(request.getHeader("userId"), id);
 
@@ -153,21 +123,9 @@ public class NoteController {
 		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
 	}
 
-	/**
-	 * @param token
-	 * @param id
-	 * @param remindDate
-	 * @return
-	 * @throws ParseException
-	 * @throws InvalidDateException
-	 * @throws NoteException
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 */
 	@PutMapping(value = "/add-reminder/{id}")
 	public ResponseEntity<ResponseDTO> addReminder(HttpServletRequest request,
-			@PathVariable(value = "id") String id, @RequestBody ReminderDTO reminderDTO)
+			@PathVariable String id, @RequestBody ReminderDTO reminderDTO)
 			throws InvalidDateException, NoteNotFoundException, NoteAuthorisationException {
 
 		noteService.addReminder(request.getHeader("userId"), id, reminderDTO);
@@ -178,20 +136,9 @@ public class NoteController {
 		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
 	}
 
-	/**
-	 * @param token
-	 * @param id
-	 * @return
-	 * @throws ParseException
-	 * @throws InvalidDateException
-	 * @throws NoteException
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 */
 	@PutMapping(value = "/remove-reminder/{noteId}")
 	public ResponseEntity<ResponseDTO> removeReminder(HttpServletRequest request,
-			@PathVariable(value = "noteId") String noteId)
+			@PathVariable String noteId)
 			throws ParseException, InvalidDateException, NoteNotFoundException, NoteAuthorisationException {
 
 		noteService.removeReminder(request.getHeader("userId"), noteId);
@@ -204,7 +151,7 @@ public class NoteController {
 
 	@PutMapping(value = "/add-color/{noteId}")
 	public ResponseEntity<ResponseDTO> addColor(HttpServletRequest request,
-			@PathVariable(value = "noteId") String noteId, @RequestBody ColorDTO colorDTO)
+			@PathVariable String noteId, @RequestBody ColorDTO colorDTO)
 			throws NoteNotFoundException {
 
 		noteService.addColor(request.getHeader("userId"), noteId, colorDTO);
@@ -217,7 +164,7 @@ public class NoteController {
 
 	@PutMapping(value = "/pin/{id}/{pinOrUnpin}")
 	public ResponseEntity<ResponseDTO> addPin(HttpServletRequest request,
-			@PathVariable(value = "id") String id, @PathVariable(value = "pinOrUnpin") boolean pinOrUnpin)
+			@PathVariable String id, @PathVariable boolean pinOrUnpin)
 			throws NoteNotFoundException, NoteAuthorisationException {
 
 		noteService.addPin(request.getHeader("userId"), id, pinOrUnpin);
@@ -234,8 +181,8 @@ public class NoteController {
 
 	@PutMapping(value = "/archive/{id}/{archiveOrUnarchive}")
 	public ResponseEntity<ResponseDTO> addToArchieve(HttpServletRequest request,
-			@PathVariable(value = "id") String id,
-			@PathVariable(value = "archiveOrUnarchive") boolean archiveOrUnarchive)
+			@PathVariable String id,
+			@PathVariable boolean archiveOrUnarchive)
 			throws NoteNotFoundException, NoteAuthorisationException {
 
 		noteService.addToArchive(request.getHeader("userId"), id, archiveOrUnarchive);
@@ -248,64 +195,6 @@ public class NoteController {
 		}
 		responseDTO.setStatus(messagePropertyConfig.getSuccessfulStatus());
 		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-	}
-
-	@PostMapping(value = "/create-label")
-	public ResponseEntity<ResponseDTO> createLabel(HttpServletRequest request,
-			@RequestBody LabelCreateDTO labelCreateDTO) throws LabelException {
-
-		noteService.createLabel(request.getHeader("userId"), labelCreateDTO);
-
-		ResponseDTO responseDTO = new ResponseDTO();
-		responseDTO.setMessage(messagePropertyConfig.getCreateLabelMsg());
-		responseDTO.setStatus(messagePropertyConfig.getSuccessfulStatus());
-		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-	}
-
-	@PostMapping(value = "/add-label/{noteId}")
-	public ResponseEntity<ResponseDTO> addLabel(HttpServletRequest request,
-			@PathVariable(value = "noteId") String noteId, @RequestBody LabelAddDTO labelAddDTO)
-			throws NoteNotFoundException, LabelException, LabelNotFoundException {
-
-		noteService.addLabel(request.getHeader("userId"), noteId, labelAddDTO);
-
-		ResponseDTO responseDTO = new ResponseDTO();
-		responseDTO.setMessage(messagePropertyConfig.getAddLabelMsg());
-		responseDTO.setStatus(messagePropertyConfig.getSuccessfulStatus());
-		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-	}
-
-	@PutMapping(value = "/edit-label")
-	public ResponseEntity<ResponseDTO> editLabel(HttpServletRequest request,
-			@RequestParam String currentLabelId, @RequestParam String newLabelName) throws LabelException {
-
-		noteService.editLabel(request.getHeader("userId"), currentLabelId, newLabelName);
-
-		ResponseDTO responseDTO = new ResponseDTO();
-		responseDTO.setMessage(messagePropertyConfig.getEditLabelMsg());
-		responseDTO.setStatus(messagePropertyConfig.getSuccessfulStatus());
-		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-	}
-
-	@DeleteMapping(value = "/delete-label")
-	public ResponseEntity<ResponseDTO> deleteLabel(HttpServletRequest request,
-			@RequestParam String labelId) throws LabelException {
-
-		noteService.deleteLabel(request.getHeader("userId"), labelId);
-
-		ResponseDTO responseDTO = new ResponseDTO();
-		responseDTO.setMessage(messagePropertyConfig.getDeleteLabelMsg());
-		responseDTO.setStatus(messagePropertyConfig.getSuccessfulStatus());
-		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-	}
-
-	@GetMapping(value = "/get-all-label")
-	public ResponseEntity<List<Label>> viewAllLabel(HttpServletRequest request)
-			throws LabelException {
-
-		List<Label> labelList = noteService.getAllLabel(request.getHeader("userId"));
-
-		return new ResponseEntity<>(labelList, HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/notes-by-label-id/{labelId}")
@@ -349,7 +238,7 @@ public class NoteController {
 
 	@PutMapping(value = "/remove-label-from-note/{noteId}")
 	public ResponseEntity<ResponseDTO> removeLabelFromNote(HttpServletRequest request,
-			@PathVariable(value = "noteId") String noteId, @RequestBody String labelId)
+			@PathVariable String noteId, @RequestBody String labelId)
 			throws NoteNotFoundException, LabelException {
 
 		noteService.removeLabelFromNote(request.getHeader("userId"), noteId, labelId);
@@ -360,7 +249,7 @@ public class NoteController {
 		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
 	}
 	
-	@GetMapping(value="/sort-note-by-title")
+	/*@GetMapping(value="/sort-note-by-title")
 	public List<NoteViewDTO> sortNoteByTitle(HttpServletRequest request, @RequestParam Boolean ascendingOrDescending) {
 		
 		return noteService.sortNoteByTitle(request.getHeader("userId"),ascendingOrDescending);
@@ -368,11 +257,11 @@ public class NoteController {
 	}
 	
 	@GetMapping(value="/sort-note-by-date")
-	public List<NoteViewDTO> sortNoteByDate(HttpServletRequest request, @RequestParam Boolean ascendingOrDescending) {
+	public List<NoteViewDTO> sortNoteByDate(HttpServletRequest request, @RequestParam(required=false) Boolean ascendingOrDescending) {
 		
 		return noteService.sortNoteByDate(request.getHeader("userId"),ascendingOrDescending);
 		
-	}
+	}*/
 	
 	
 	@GetMapping(value="/sort-label-by-name")

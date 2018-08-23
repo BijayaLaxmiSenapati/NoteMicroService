@@ -1,5 +1,4 @@
 package com.bridgelabz.fundoo.note.models;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
@@ -7,6 +6,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 @Document(indexName="fundoolabels", type="labels")
 public class Label {
 
+	
 	private String userId;
 
 	@Id

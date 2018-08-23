@@ -1,6 +1,5 @@
 package com.bridgelabz.fundoo.note.services;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -8,9 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.bridgelabz.fundoo.note.exceptions.EmptyNoteException;
@@ -25,14 +21,12 @@ import com.bridgelabz.fundoo.note.factories.NoteFactory;
 import com.bridgelabz.fundoo.note.models.ColorDTO;
 import com.bridgelabz.fundoo.note.models.Label;
 import com.bridgelabz.fundoo.note.models.LabelAddDTO;
-import com.bridgelabz.fundoo.note.models.LabelCreateDTO;
 import com.bridgelabz.fundoo.note.models.Note;
 import com.bridgelabz.fundoo.note.models.NoteCreateDTO;
 import com.bridgelabz.fundoo.note.models.NoteUpdateDTO;
 import com.bridgelabz.fundoo.note.models.NoteViewDTO;
 import com.bridgelabz.fundoo.note.models.ReminderDTO;
 import com.bridgelabz.fundoo.note.models.URLMetaData;
-import com.bridgelabz.fundoo.note.repositories.LabelRepository;
 import com.bridgelabz.fundoo.note.repositories.LabelRepositoryES;
 import com.bridgelabz.fundoo.note.repositories.NoteRepository;
 import com.bridgelabz.fundoo.note.repositories.NoteRepositoryES;
@@ -48,13 +42,13 @@ public class NoteServiceImpl implements NoteService {
 	private NoteRepositoryES noteRepositoryES;
 
 	@Autowired
-	private LabelRepository labelRepository;
-
-	@Autowired
 	private LabelRepositoryES labelRepositoryES;
 
 	@Autowired
 	private NoteFactory noteFactory;
+
+	@Autowired
+	private ContentScrappingService contentScrappingService;
 
 	@Override
 	public NoteViewDTO createNote(String userId, NoteCreateDTO noteCreateDTO)
@@ -66,7 +60,8 @@ public class NoteServiceImpl implements NoteService {
 		note.setTitle(noteCreateDTO.getTitle());
 		note.setDescription(noteCreateDTO.getDescription());
 
-		List<URLMetaData> listOfURLMetaData = analyseDescription(noteCreateDTO.getDescription());
+		List<URLMetaData> listOfURLMetaData = contentScrappingService
+				.analyseDescription(noteCreateDTO.getDescription());
 		note.setListOfURLMetaData(listOfURLMetaData);
 
 		if (noteCreateDTO.getReminder() != null) {
@@ -123,7 +118,8 @@ public class NoteServiceImpl implements NoteService {
 		if (noteUpdateDTO.getDescription() != null) {
 			note.setDescription(noteUpdateDTO.getDescription());
 
-			List<URLMetaData> listOfURLMetaData = analyseDescription(noteUpdateDTO.getDescription());
+			List<URLMetaData> listOfURLMetaData = contentScrappingService
+					.analyseDescription(noteUpdateDTO.getDescription());
 			note.setListOfURLMetaData(listOfURLMetaData);
 		}
 		note.setUpdatedAt(new Date());
@@ -133,22 +129,35 @@ public class NoteServiceImpl implements NoteService {
 	}
 
 	@Override
-	public List<NoteViewDTO> getAllNotes(String userId) {
+	public List<NoteViewDTO> getAllNotes(String userId, String sortBy, String sortOrder) {
 
-		Optional<List<Note>> noteList = noteRepositoryES.findAllByUserId(userId);
+		List<Note> noteList = noteRepositoryES.findAllByUserId(userId).get();
+		if (noteList != null) {
 
-		List<NoteViewDTO> noteViewDTO = new ArrayList<>();
-		if (noteList.isPresent()) {
-			/*
-			 * for (Note note : noteList) {
-			 * noteViewDTO.add(noteFactory.getNoteViewDTOFromNote(note)); }
-			 */
-			// noteViewDTO=noteList.stream().map(x ->
-			// noteFactory.getNoteViewDTOFromNote(x)).collect(Collectors.toList());
-			noteViewDTO = noteList.get().stream().map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
+			if (sortBy == null && sortOrder == null) {
+
+				return noteList.stream().map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
+			}
+			if (sortBy != null && sortBy.equalsIgnoreCase("byTitle")) {
+				if (sortOrder == null || sortOrder.equalsIgnoreCase("ascending")) {
+					return noteList.stream().sorted(Comparator.comparing(Note::getTitle))
+							.map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
+				} else {
+					return noteList.stream().sorted(Comparator.comparing(Note::getTitle).reversed())
+							.map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
+				}
+
+			} else if (sortBy != null && sortBy.equalsIgnoreCase("byDate")) {
+				if (sortOrder == null || sortOrder.equalsIgnoreCase("ascending")) {
+					return noteList.stream().sorted(Comparator.comparing(Note::getCreatedAt))
+							.map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
+				} else {
+					return noteList.stream().sorted(Comparator.comparing(Note::getCreatedAt).reversed())
+							.map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
+				}
+			}
 		}
-
-		return noteViewDTO;
+		return new ArrayList<>();
 	}
 
 	@Override
@@ -248,22 +257,30 @@ public class NoteServiceImpl implements NoteService {
 	}
 
 	@Override
-	public void createLabel(String userId, LabelCreateDTO labelCreateDTO) throws LabelException {
+	public List<NoteViewDTO> getAllTrashedNote(String userId) {
 
-		if (labelCreateDTO.getLabelName() == null) {
-			throw new LabelException("for creating a label \"labelName\" should have given");
-		}
+		Optional<List<Note>> noteList = noteRepositoryES.findAllByUserIdAndTrashed(userId, true);
 
-		if (labelRepositoryES.findByUserIdAndLabelName(userId, labelCreateDTO.getLabelName()).isPresent()) {
-			throw new LabelException("label name already present");
-		}
+		List<NoteViewDTO> noteViewDTO = noteList.get().stream().map(noteFactory::getNoteViewDTOFromNote)
+				.collect(Collectors.toList());
+		return noteViewDTO;
+	}
 
-		Label label = new Label();
-		label.setUserId(userId);
-		label.setLabelName(labelCreateDTO.getLabelName());
+	@Override
+	public List<NoteViewDTO> getAllArchivedNote(String userId) {
 
-		labelRepository.insert(label);
-		labelRepositoryES.save(label);
+		Optional<List<Note>> noteList = noteRepositoryES.findAllByUserIdAndArchived(userId, true);
+
+		List<NoteViewDTO> noteViewDTO = noteList.get().stream().map(noteFactory::getNoteViewDTOFromNote)
+				.collect(Collectors.toList());
+		return noteViewDTO;
+	}
+
+	@Override
+	public void emptyTrash(String userId) {
+
+		noteRepository.deleteAllByUserIdAndTrashed(userId, true);
+		noteRepositoryES.deleteAllByUserIdAndTrashed(userId, true);
 
 	}
 
@@ -305,69 +322,6 @@ public class NoteServiceImpl implements NoteService {
 	}
 
 	@Override
-	public void editLabel(String userId, String currentLabelId, String newLabelName) throws LabelException {
-
-		Optional<Label> labelOfUser = labelRepositoryES.findByLabelIdAndUserId(currentLabelId, userId);
-		if (!labelOfUser.isPresent()) {
-			throw new LabelException("given label not found");
-		}
-
-		if (labelRepositoryES.findByUserIdAndLabelName(userId, newLabelName).isPresent()) {
-			throw new LabelException("the given new label name is already present");
-		}
-
-		Optional<List<Note>> listOfNotes = noteRepository.findAllByUserIdAndLabelId(userId, currentLabelId);
-
-		if (listOfNotes.isPresent()) {
-			for (Note note : listOfNotes.get()) {
-				for (Label label : note.getLabelList()) {
-
-					if (label.getLabelId().equals(currentLabelId)) {
-
-						label.setLabelName(newLabelName);
-
-						noteRepository.save(note);
-						noteRepositoryES.save(note);
-					}
-				}
-			}
-		}
-
-		labelOfUser.get().setLabelName(newLabelName);
-		labelRepository.save(labelOfUser.get());
-		labelRepositoryES.save(labelOfUser.get());
-	}
-
-	@Override
-	public void deleteLabel(String userId, String labelId) throws LabelException {
-
-		Optional<Label> labelOfUser = labelRepositoryES.findByLabelIdAndUserId(labelId, userId);
-		if (!labelOfUser.isPresent()) {
-			throw new LabelException("given label not found");
-		}
-
-		Optional<List<Note>> listOfNotes = noteRepository.findAllByUserIdAndLabelId(userId, labelId);
-
-		if (listOfNotes.isPresent()) {
-			for (Note note : listOfNotes.get()) {
-				for (Label label : note.getLabelList()) {
-
-					if (label.getLabelId().equals(labelId)) {
-
-						note.getLabelList().remove(label);
-
-						noteRepository.save(note);
-						noteRepositoryES.save(note);
-					}
-				}
-			}
-		}
-		labelRepository.delete(labelOfUser.get());
-		labelRepositoryES.delete(labelOfUser.get());
-
-	}
-
-	@Override
 	public List<Note> notesByLabelId(String userId, String labelId) throws LabelException {
 
 		Optional<Label> labelOfUser = labelRepositoryES.findByLabelIdAndUserId(labelId, userId);
@@ -376,42 +330,6 @@ public class NoteServiceImpl implements NoteService {
 		}
 
 		return noteRepository.findAllByUserIdAndLabelId(userId, labelId).get();
-	}
-
-	@Override
-	public List<Label> getAllLabel(String userId) throws LabelException {
-
-		Optional<List<Label>> labelsOfUser = labelRepositoryES.findAllByUserId(userId);
-
-		return labelsOfUser.get();
-	}
-
-	@Override
-	public List<NoteViewDTO> getAllTrashedNote(String userId) {
-
-		Optional<List<Note>> noteList = noteRepositoryES.findAllByUserIdAndTrashed(userId, true);
-
-		List<NoteViewDTO> noteViewDTO = noteList.get().stream().map(noteFactory::getNoteViewDTOFromNote)
-				.collect(Collectors.toList());
-		return noteViewDTO;
-	}
-
-	@Override
-	public List<NoteViewDTO> getAllArchivedNote(String userId) {
-
-		Optional<List<Note>> noteList = noteRepositoryES.findAllByUserIdAndArchived(userId, true);
-
-		List<NoteViewDTO> noteViewDTO = noteList.get().stream().map(noteFactory::getNoteViewDTOFromNote)
-				.collect(Collectors.toList());
-		return noteViewDTO;
-	}
-
-	@Override
-	public void emptyTrash(String userId) {
-
-		noteRepository.deleteAllByUserIdAndTrashed(userId, true);
-		noteRepositoryES.deleteAllByUserIdAndTrashed(userId, true);
-
 	}
 
 	@Override
@@ -448,70 +366,6 @@ public class NoteServiceImpl implements NoteService {
 		noteRepositoryES.save(optionalNote.get());
 	}
 
-	public URLMetaData getLinkInformation(String link) throws GetURLInfoException {
-		Document doc = null;
-		String title = null;
-		String imageUrl = null;
-		try {
-			doc = Jsoup.connect(link).get();
-			title = doc.title();
-			Element image = doc.select("img").first();
-			if (image != null)
-				imageUrl = image.absUrl("src");
-		} catch (IOException exception) {
-			throw new GetURLInfoException("unable to fetch link information");
-		}
-
-		URLMetaData urlMetaData = new URLMetaData();
-		urlMetaData.setUrl(link);
-		urlMetaData.setImageUrl(imageUrl);
-		urlMetaData.setUrlTitle(title);
-
-		return urlMetaData;
-	}
-
-	public List<URLMetaData> analyseDescription(String description) throws GetURLInfoException {
-
-		String regex = "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$";
-		String[] desciptionArray = description.split("\\s+");
-
-		List<URLMetaData> listOfURLMetaData = new ArrayList<>();
-		for (int i = 0; i < desciptionArray.length; i++) {
-			if (desciptionArray[i].matches(regex)) {
-				listOfURLMetaData.add(getLinkInformation(desciptionArray[i]));
-			}
-		}
-		return listOfURLMetaData;
-	}
-
-	@Override
-	public List<NoteViewDTO> sortNoteByTitle(String userId, Boolean ascendingOrDescending) {
-
-		List<Note> noteList = noteRepositoryES.findAllByUserId(userId).get();
-		if (ascendingOrDescending) {
-			return noteList.stream().sorted(Comparator.comparing(Note::getTitle)).map(noteFactory::getNoteViewDTOFromNote)
-			.collect(Collectors.toList());
-		} else {
-			return noteList.stream().sorted(Comparator.comparing(Note::getTitle).reversed()).map(noteFactory::getNoteViewDTOFromNote)
-			.collect(Collectors.toList());
-		}
-		
-	}
-
-	@Override
-	public List<NoteViewDTO> sortNoteByDate(String userId, Boolean ascendingOrDescending) {
-
-		List<Note> noteList = noteRepositoryES.findAllByUserId(userId).get();
-
-		if (ascendingOrDescending) {
-			return noteList.stream().sorted(Comparator.comparing(Note::getCreatedAt))
-					.map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
-		} else {
-			return noteList.stream().sorted(Comparator.comparing(Note::getCreatedAt).reversed())
-					.map(noteFactory::getNoteViewDTOFromNote).collect(Collectors.toList());
-		}
-	}
-
 	@Override
 	public List<Label> sortLabelByName(String userId, Boolean ascendingOrDescending) {
 
@@ -520,7 +374,8 @@ public class NoteServiceImpl implements NoteService {
 		if (ascendingOrDescending) {
 			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName)).collect(Collectors.toList());
 		} else {
-			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName).reversed()).collect(Collectors.toList());
+			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName).reversed())
+					.collect(Collectors.toList());
 		}
 	}
 
@@ -530,9 +385,10 @@ public class NoteServiceImpl implements NoteService {
 		List<Label> labelList = labelRepositoryES.findAllByUserId(userId).get();
 
 		if (ascendingOrDescending) {
-			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName)).collect(Collectors.toList());
+			return labelList.stream().sorted(Comparator.comparing(Label::getCreatedAt)).collect(Collectors.toList());
 		} else {
-			return labelList.stream().sorted(Comparator.comparing(Label::getLabelName).reversed()).collect(Collectors.toList());
+			return labelList.stream().sorted(Comparator.comparing(Label::getCreatedAt).reversed())
+					.collect(Collectors.toList());
 		}
 	}
 

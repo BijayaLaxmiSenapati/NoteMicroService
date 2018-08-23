@@ -13,7 +13,6 @@ import com.bridgelabz.fundoo.note.exceptions.NoteTrashException;
 import com.bridgelabz.fundoo.note.models.ColorDTO;
 import com.bridgelabz.fundoo.note.models.Label;
 import com.bridgelabz.fundoo.note.models.LabelAddDTO;
-import com.bridgelabz.fundoo.note.models.LabelCreateDTO;
 import com.bridgelabz.fundoo.note.models.Note;
 import com.bridgelabz.fundoo.note.models.NoteCreateDTO;
 import com.bridgelabz.fundoo.note.models.NoteUpdateDTO;
@@ -22,69 +21,17 @@ import com.bridgelabz.fundoo.note.models.ReminderDTO;
 
 public interface NoteService {
 
-	/**
-	 * @param token
-	 * @param noteCreateDTO
-	 * @return
-	 * @throws NoteException
-	 * @throws EmptyNoteException
-	 * @throws InvalidDateException
-	 * @throws GetURLInfoException
-	 */
 	NoteViewDTO createNote(String token, NoteCreateDTO noteCreateDTO)
 			throws EmptyNoteException, InvalidDateException, GetURLInfoException;
 
-	/**
-	 * @param token
-	 * @param noteCreateDTO
-	 * @throws NoteException
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 * @throws GetURLInfoException 
-	 */
 	void updateNote(String token, NoteUpdateDTO noteCreateDTO) throws NoteNotFoundException, NoteAuthorisationException, GetURLInfoException;
 
-	/**
-	 * @param token
-	 * @return
-	 */
-	List<NoteViewDTO> getAllNotes(String token);
-
-	/**
-	 * @param token
-	 * @param noteId
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 */
 	void trashNote(String token, String noteId, boolean trashOrRestore)
 			throws NoteNotFoundException, NoteAuthorisationException;
 
-	/**
-	 * @param token
-	 * @param id
-	 * @throws NoteException
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 * @throws NoteTrashException
-	 */
 	void permanentlyDeleteNote(String token, String id)
 			throws NoteNotFoundException, NoteAuthorisationException, NoteTrashException;
 
-	/**
-	 * @param token
-	 * @param id
-	 * @param remindDate
-	 * @throws ParseException
-	 * @throws InvalidDateException
-	 * @throws NoteException
-	 * @throws OwnerOfNoteNotFoundException
-	 * @throws NoteNotFoundException
-	 * @throws NoteAuthorisationException
-	 */
 	void addReminder(String token, String id, ReminderDTO reminderDTO)
 			throws InvalidDateException, NoteNotFoundException, NoteAuthorisationException;
 
@@ -96,18 +43,7 @@ public interface NoteService {
 	void addToArchive(String token, String id, boolean archiveOrUnarchive)
 			throws NoteNotFoundException, NoteAuthorisationException;
 
-	void createLabel(String token, LabelCreateDTO labelCreateDTO) throws LabelException;
-
-	void addLabel(String token, String noteId, LabelAddDTO labelAddDTO)
-			throws NoteNotFoundException, LabelException, LabelNotFoundException;
-
-	void editLabel(String token, String currentLabelName, String newLabelName) throws LabelException;
-
-	void deleteLabel(String token, String labelName) throws LabelException;
-
 	List<Note> notesByLabelId(String token, String labelName) throws LabelException;
-
-	List<Label> getAllLabel(String token) throws LabelException;
 
 	List<NoteViewDTO> getAllTrashedNote(String token);
 
@@ -120,12 +56,12 @@ public interface NoteService {
 
 	void addColor(String token, String noteId, ColorDTO colorDTO) throws NoteNotFoundException;
 
-	List<NoteViewDTO> sortNoteByTitle(String header, Boolean ascendingOrDescending);
-
-	List<NoteViewDTO> sortNoteByDate(String header, Boolean ascendingOrDescending);
-
 	List<Label> sortLabelByName(String header, Boolean ascendingOrDescending);
 
 	List<Label> sortLabelByDate(String header, Boolean ascendingOrDescending);
+
+	List<NoteViewDTO> getAllNotes(String userId, String sortBy, String sortOrder);
+	void addLabel(String userId, String noteId, LabelAddDTO labelAddDTO)
+			throws NoteNotFoundException, LabelException, LabelNotFoundException ;
 
 }

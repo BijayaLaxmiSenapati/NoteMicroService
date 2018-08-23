@@ -2,14 +2,15 @@ package com.bridgelabz.fundoo.note.models;
 
 public class URLMetaData {
 	
-	private String Url;
+	private String url;
 	private String  imageUrl;
 	private String urlTitle;
+	
 	public String getUrl() {
-		return Url;
+		return url;
 	}
 	public void setUrl(String url) {
-		Url = url;
+		this.url = url;
 	}
 	public String getImageUrl() {
 		return imageUrl;
