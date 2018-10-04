@@ -2,6 +2,8 @@ package com.bridgelabz.fundoo.note.services;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.bridgelabz.fundoo.note.exceptions.EmptyNoteException;
 import com.bridgelabz.fundoo.note.exceptions.GetURLInfoException;
 import com.bridgelabz.fundoo.note.exceptions.InvalidDateException;
@@ -63,5 +65,10 @@ public interface NoteService {
 	List<NoteViewDTO> getAllNotes(String userId, String sortBy, String sortOrder);
 	void addLabel(String userId, String noteId, LabelAddDTO labelAddDTO)
 			throws NoteNotFoundException, LabelException, LabelNotFoundException ;
+
+	void addImage(String header, String noteId, MultipartFile multipartFile);
+
+	void removeImage(String header, String noteId, String imageUrl);
+
 
 }

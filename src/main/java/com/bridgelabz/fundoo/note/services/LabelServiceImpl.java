@@ -30,12 +30,13 @@ public class LabelServiceImpl implements LabelService {
 	@Autowired
 	private LabelRepositoryES labelRepositoryES;
 
-
 	@Override
 	public void createLabel(String userId, LabelCreateDTO labelCreateDTO) throws LabelException {
 
-		if (labelCreateDTO.getLabelName() == null) {
+		if (labelCreateDTO.getLabelName() == null || labelCreateDTO.getLabelName().trim().isEmpty()) {
 			throw new LabelException("for creating a label \"labelName\" should have given");
+		} else if (labelCreateDTO.getLabelName().length() > 10) {
+			throw new LabelException("Length of the label should be less than 10 charecters");
 		}
 
 		if (labelRepositoryES.findByUserIdAndLabelName(userId, labelCreateDTO.getLabelName()).isPresent()) {
@@ -50,8 +51,6 @@ public class LabelServiceImpl implements LabelService {
 		labelRepositoryES.save(label);
 
 	}
-
-	
 
 	@Override
 	public void editLabel(String userId, String currentLabelId, String newLabelName) throws LabelException {

@@ -21,6 +21,7 @@ public class ContentScrappingJsoupImpl implements ContentScrappingService {
 		String title = null;
 		String imageUrl = null;
 		try {
+			
 			doc = Jsoup.connect(link).get();
 			title = doc.title();
 			Element image = doc.select("img").first();

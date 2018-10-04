@@ -1,0 +1,229 @@
+{
+	"successfullyNoteCreation": {
+		"request": {
+			"url": "/notes/create-note",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"color": "black",
+				"description": "I always follow Bijaya Laxmi",
+				"title": "My Ideal Person"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "CREATED",
+			"headers": {
+				
+			},
+			"body": {
+				
+			}
+		}
+	},
+	"noteCreationWithoutTitle": {
+		"request": {
+			"url": "/notes/create-note",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"color": "black",
+				"description": "I always follow Bijaya Laxmi"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "CREATED",
+			"headers": {
+				
+			},
+			"body": {
+				
+			}
+		}
+	},
+	"noteCreationWithReminder": {
+		"request": {
+			"url": "/notes/create-note",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"color": "black",
+				"description": "I always follow Bijaya Laxmi"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "CREATED",
+			"headers": {
+				
+			},
+			"body": {
+				"color": "black",
+				"description": "I always follow Bijaya Laxmi",
+				"title": "My Ideal Person",
+				"reminder": "2018-09-16T07:06:18.361Z"
+			}
+		}
+	},
+	"noteCreationWithEmptyTitleAndDesc": {
+		"request": {
+			"url": "/notes/create-note",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"color": "black"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Both title and description fields should not be empty",
+				"status": -20
+			}
+		}
+	},
+	"noteCreationWithWrongReminder": {
+		"request": {
+			"url": "/notes/create-note",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"color": "black",
+				"description": "I always follow Bijaya Laxmi",
+				"title": "My Ideal Person",
+				"reminder": "2018-09-14T07:06:18.361Z"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "reminder should not be earlier from now",
+				"status": -60
+			}
+		}
+	},
+	"addingWrongReminderToNote": {
+		"request": {
+			"url": "/notes/add-reminder/5b7feb9b49304d195ebbd197",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"reminder": "2018-09-14T07:06:18.359Z"
+			},
+			"method": "PUT"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "reminder should not be earlier from now",
+				"status": -60
+			}
+		}
+	},
+	"addingReminderToNote": {
+		"request": {
+			"url": "/notes/add-reminder/5b7feb9b49304d195ebbd197",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"reminder": "2018-09-17T07:06:18.359Z"
+			},
+			"method": "PUT"
+		},
+		"response": {
+			"status": "OK",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Reminder successfully added to the note",
+				"status": 1
+			}
+		}
+	},
+	"createLabelWithoutLabelName": {
+		"request": {
+			"url": "/notes/create-label",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "for creating a label \"labelName\" should have given",
+				"status": -100
+			}
+		}
+	},
+	"createLabel": {
+		"request": {
+			"url": "/notes/create-label",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"labelName": "streee"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "OK",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Label created successfully",
+				"status": 1
+			}
+		}
+	},
+	"createLabelWithLongName": {
+		"request": {
+			"url": "/notes/create-label",
+			"headers": {
+				"userId": "5b7fe0c349304d15011c9001"
+			},
+			"body": {
+				"labelName": "streeeeeeeeeeeeee"
+			},
+			"method": "POST"
+		},
+		"response": {
+			"status": "BAD_REQUEST",
+			"headers": {
+				
+			},
+			"body": {
+				"message": "Length of the label should be less than 10 charecters",
+				"status": -100
+			}
+		}
+	}
+}

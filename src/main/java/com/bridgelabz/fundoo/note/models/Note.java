@@ -1,5 +1,6 @@
 package com.bridgelabz.fundoo.note.models;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +37,8 @@ public class Note {
 	private List<Label> labelList;
 	
 	private List<URLMetaData> listOfURLMetaData;
+	
+	private List<String> listOfImageUrl=new ArrayList<String>();
 
 	public Note() {
 		super();
@@ -145,11 +148,21 @@ public class Note {
 		this.listOfURLMetaData = listOfURLMetaData;
 	}
 
+	public List<String> getListOfImageUrl() {
+		return listOfImageUrl;
+	}
+
+	public void setListOfImageUrl(List<String> listOfImageUrl) {
+		this.listOfImageUrl = listOfImageUrl;
+	}
+
 	@Override
 	public String toString() {
 		return "Note [userId=" + userId + ", id=" + id + ", title=" + title + ", description=" + description
 				+ ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", color=" + color + ", reminder="
 				+ reminder + ", trashed=" + trashed + ", pinned=" + pinned + ", archived=" + archived + ", labelList="
-				+ labelList + ", listOfURLMetaData=" + listOfURLMetaData + "]";
+				+ labelList + ", listOfURLMetaData=" + listOfURLMetaData + ", listOfImageUrl=" + listOfImageUrl + "]";
 	}
+
+	
 }

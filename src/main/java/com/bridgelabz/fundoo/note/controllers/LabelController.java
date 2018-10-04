@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,6 +24,7 @@ import com.bridgelabz.fundoo.note.models.LabelCreateDTO;
 import com.bridgelabz.fundoo.note.models.ResponseDTO;
 import com.bridgelabz.fundoo.note.services.LabelService;
 
+@RefreshScope
 @RestController
 @RequestMapping("/notes")
 public class LabelController {

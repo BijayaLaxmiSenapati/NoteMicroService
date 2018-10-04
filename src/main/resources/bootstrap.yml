@@ -1,6 +1,9 @@
 spring:
   application:
     name: noteservice
+  cloud:
+    config:
+      uri: http://localhost:8094
 server:
   port: 8092
 eureka:

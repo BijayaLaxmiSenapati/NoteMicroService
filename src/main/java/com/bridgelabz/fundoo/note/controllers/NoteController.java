@@ -1,4 +1,4 @@
-package com.bridgelabz.fundoo.note.controllers;
+   package com.bridgelabz.fundoo.note.controllers;
 
 import java.text.ParseException;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoo.note.configurations.MessagePropertyConfig;
 import com.bridgelabz.fundoo.note.exceptions.EmptyNoteException;
@@ -38,6 +40,7 @@ import com.bridgelabz.fundoo.note.models.ReminderDTO;
 import com.bridgelabz.fundoo.note.models.ResponseDTO;
 import com.bridgelabz.fundoo.note.services.NoteService;
 
+@RefreshScope
 @RestController
 @RequestMapping("/notes")
 public class NoteController {
@@ -277,4 +280,27 @@ public class NoteController {
 		return noteService.sortLabelByDate(request.getHeader("userId"),ascendingOrDescending);
 	}
 
+	
+	@PostMapping(value="add-image")
+	public ResponseEntity<ResponseDTO> addImage(HttpServletRequest request,@RequestParam String noteId,@RequestParam MultipartFile multipartFile) {
+		System.out.println(request.getHeader("userId"));
+		System.out.println(noteId);
+		System.out.println(multipartFile);
+
+		noteService.addImage(request.getHeader("userId"),noteId,multipartFile);	
+		
+		ResponseDTO responseDTO = new ResponseDTO();
+		responseDTO.setMessage("image added to the note successfully");
+		responseDTO.setStatus(1);
+		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+	}
+	
+	@PostMapping(value="remove-image")
+	public ResponseEntity<ResponseDTO> removeImage(HttpServletRequest request,@RequestParam String noteId,@RequestParam String imageUrl) {
+		noteService.removeImage(request.getHeader("userId"),noteId,imageUrl);
+		ResponseDTO responseDTO = new ResponseDTO();
+		responseDTO.setMessage("image removed from  the note successfully");
+		responseDTO.setStatus(1);
+		return new ResponseEntity<>(responseDTO, HttpStatus.OK);		
+	}
 }

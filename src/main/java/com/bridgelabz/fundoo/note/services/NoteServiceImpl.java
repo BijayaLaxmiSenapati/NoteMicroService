@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import com.bridgelabz.fundoo.note.exceptions.EmptyNoteException;
 import com.bridgelabz.fundoo.note.exceptions.GetURLInfoException;
 import com.bridgelabz.fundoo.note.exceptions.InvalidDateException;
@@ -50,6 +51,11 @@ public class NoteServiceImpl implements NoteService {
 	@Autowired
 	private ContentScrappingService contentScrappingService;
 
+	@Autowired
+	private ImageStorageService imageStorageService;
+
+	public static final String SUFFIX = "/";
+	
 	@Override
 	public NoteViewDTO createNote(String userId, NoteCreateDTO noteCreateDTO)
 			throws EmptyNoteException, InvalidDateException, GetURLInfoException {
@@ -88,7 +94,7 @@ public class NoteServiceImpl implements NoteService {
 
 			List<Label> list = new ArrayList<Label>();
 
-			Optional<Label> labelOfUser = labelRepositoryES.findByUserIdAndLabelId(userId, noteCreateDTO.getLabelId());////////////////
+			Optional<Label> labelOfUser = labelRepositoryES.findByUserIdAndLabelId(userId, noteCreateDTO.getLabelId());
 
 			if (labelOfUser.isPresent()) {
 
@@ -190,6 +196,8 @@ public class NoteServiceImpl implements NoteService {
 
 	private Note validate(String userId, String noteId) throws NoteNotFoundException, NoteAuthorisationException {
 
+		System.out.println(userId);
+		System.out.println(noteId);
 		Optional<Note> optionalnote = noteRepositoryES.findByIdAndUserId(noteId, userId);
 		if (!optionalnote.isPresent()) {
 			throw new NoteNotFoundException("given note-id to delete is not present");
@@ -390,6 +398,56 @@ public class NoteServiceImpl implements NoteService {
 			return labelList.stream().sorted(Comparator.comparing(Label::getCreatedAt).reversed())
 					.collect(Collectors.toList());
 		}
+	}
+
+	@Override
+	public void addImage(String userId, String noteId, MultipartFile multipartFile) {
+
+		String folderName = userId + SUFFIX + noteId;
+
+		imageStorageService.uploadFile(folderName, multipartFile);
+
+		String imageUrl = imageStorageService.getFile(folderName, multipartFile.getOriginalFilename());
+
+		Note note = noteRepositoryES.findById(noteId).get();
+
+		List<String> imageUrls = note.getListOfImageUrl();
+		imageUrls.add(imageUrl);
+		note.setListOfImageUrl(imageUrls);
+
+		noteRepository.save(note);
+		noteRepositoryES.save(note);
+	}
+
+	@Override
+	public void removeImage(String userId, String noteId, String imageUrl) {
+
+		System.out.println(imageUrl+"..........................");
+		String folderName = userId + SUFFIX + noteId;
+
+		String[] images=imageUrl.split("/");
+		imageStorageService.deleteFile(folderName, images[images.length-1]);
+
+		Note note = noteRepositoryES.findById(noteId).get();
+
+		List<String> imageUrls = note.getListOfImageUrl();
+
+		System.out.println(imageUrls.size());
+		/*for (String image : imageUrls) {
+			if (image.equals(imageUrl)) {
+				imageUrls.remove(image);
+			}
+		}*/
+		for(int i=0;i<imageUrls.size();i++) {
+			if(imageUrls.get(i).equals(imageUrl)) {
+				imageUrls.remove(i);
+			}
+		}
+		note.setListOfImageUrl(imageUrls);
+
+		noteRepository.save(note);
+		noteRepositoryES.save(note);
+
 	}
 
 }
